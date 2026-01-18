@@ -199,6 +199,20 @@ void handleWebSocketMessage(crow::websocket::connection& conn, const std::string
                     currentSession->player2.socket->send_text(
                         JsonSerializer::bothPlayersReady()
                     );
+                    // Отправляем YOUR_TURN первому игроку
+                    // currentTurn всегда равен 1 при начале игры
+                    std::cout << "Отправка YOUR_TURN, currentTurn: " << currentSession->currentTurn << std::endl;
+                    if (currentSession->currentTurn == 1) {
+                        std::cout << "Отправка YOUR_TURN player1" << std::endl;
+                        currentSession->player1.socket->send_text(
+                            JsonSerializer::yourTurn()
+                        );
+                    } else {
+                        std::cout << "Отправка YOUR_TURN player2" << std::endl;
+                        currentSession->player2.socket->send_text(
+                            JsonSerializer::yourTurn()
+                        );
+                    }
                 }
                 
                 return;
@@ -230,10 +244,12 @@ void handleWebSocketMessage(crow::websocket::connection& conn, const std::string
                 
                 Player& opponent = currentSession->getOpponent();
                 
-                // Отправка состояния текущему игроку (MY_SHOT)
+                // Отправка состояния текущему игроку (MY_SHOT) - состояние поля противника
+                // Показывает стреляющему куда он попал по полю противника
                 conn.send_text(JsonSerializer::stateMyShot(opponent.board));
                 
-                // Отправка состояния противнику (ENEMY_SHOT)
+                // Отправка состояния противнику (ENEMY_SHOT) - состояние его собственного поля
+                // Показывает противнику куда по нему попали (его собственное поле с выстрелами)
                 if (opponent.socket) {
                     opponent.socket->send_text(JsonSerializer::stateEnemyShot(opponent.board));
                 }
@@ -249,6 +265,13 @@ void handleWebSocketMessage(crow::websocket::connection& conn, const std::string
                         currentSession->player2.socket->send_text(
                             JsonSerializer::gameOver(winner, currentPlayer.stats)
                         );
+                    }
+                } else {
+                    // Если игра не закончилась, отправляем YOUR_TURN следующему игроку
+                    // После processShot ход уже переключен, если был промах
+                    Player& nextPlayer = currentSession->getCurrentPlayer();
+                    if (nextPlayer.socket) {
+                        nextPlayer.socket->send_text(JsonSerializer::yourTurn());
                     }
                 }
                 

@@ -93,6 +93,17 @@
   color: #dc2626;
 }
 
+/* Попадание по вражескому кораблю - красная заливка */
+.cell.hit {
+  background-color: #dc2626 !important;
+  opacity: 0.8;
+}
+
+.cell.hit .shotMarker {
+  color: #ffffff;
+  font-size: 24px;
+}
+
 .hint {
   margin-top: 10px;
   padding: 8px 16px;

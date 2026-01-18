@@ -157,5 +157,12 @@ public:
         msg["type"] = "PONG";
         return msg.dump();
     }
+    
+    // Уведомление о том, что сейчас ваш ход
+    static std::string yourTurn() {
+        crow::json::wvalue msg;
+        msg["type"] = "YOUR_TURN";
+        return msg.dump();
+    }
 };
 

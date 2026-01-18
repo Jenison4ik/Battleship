@@ -16,7 +16,8 @@ export default function CreateGame({
   socketRef: React.MutableRefObject<GameWebSocket>;
 }) {
   const [session, setSession] = useState<string | null>(null);
-  const { setAppState } = useApp();
+  const { setAppState, setPlayerId, setFirstTurn } = useApp();
+  
   useEffect(() => {
     // socketRef.current гарантированно не null на этом этапе
     const gameSocket = socketRef.current;
@@ -34,12 +35,15 @@ export default function CreateGame({
       }
 
       if (isGameStartMessage(message)) {
+        setFirstTurn(message.firstTurn);
         setAppState("build");
       }
 
       // Используем type guards для безопасной проверки типов
       if (isSessionCreatedMessage(message)) {
         setSession(message.roomCode);
+        // При создании сессии мы player1
+        setPlayerId("player1");
       } else if (isErrorMessage(message)) {
         console.error("Server error:", message.message);
       }
@@ -49,7 +53,7 @@ export default function CreateGame({
     return () => {
       unsubscribe();
     };
-  }, [socketRef, setAppState]);
+  }, [socketRef, setAppState, setPlayerId, setFirstTurn]);
 
   return (
     <>

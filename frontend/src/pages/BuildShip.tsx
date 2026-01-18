@@ -11,14 +11,17 @@ import {
   parseServerMessage,
   isShipsPlacedMessage,
   isErrorMessage,
+  isBothPlayersReadyMessage,
 } from "../types/serverMessages";
-import { RotateCw } from "lucide-react";
+import { Shuffle } from "lucide-react";
 import styles from "./BuildShip.module.css";
 
 export default function BuildShip() {
-  const { socketRef, setAppState } = useApp();
+  const { socketRef, setAppState, setMyShips } = useApp();
   const [ships, setShips] = useState<Ship[]>([]);
   const [isPlacing, setIsPlacing] = useState(false);
+  const [button,setButtton] = useState('Поехали');
+ 
 
   // Генерируем случайную расстановку при монтировании
   useEffect(() => {
@@ -38,8 +41,14 @@ export default function BuildShip() {
         return;
       }
 
-      if (isShipsPlacedMessage(message)) {
-        // Корабли успешно размещены, переходим к игре
+      if(isShipsPlacedMessage(message)){
+        setButtton('Ждём других игроков');
+        setIsPlacing(false)
+      }
+
+      if (isBothPlayersReadyMessage(message)) {
+        // Корабли успешно размещены, сохраняем их и переходим к игре
+        setMyShips(ships);
         setAppState("ingame");
       } else if (isErrorMessage(message)) {
         console.error("Server error:", message.message);
@@ -51,7 +60,7 @@ export default function BuildShip() {
     return () => {
       unsubscribe();
     };
-  }, [socketRef, setAppState]);
+  }, [socketRef, setAppState, setMyShips, ships]);
 
   const handleShuffle = () => {
     setShips(generateRandomShips());
@@ -98,7 +107,7 @@ export default function BuildShip() {
         <GameBoard
           ships={ships}
           onShipsChange={handleShipsChange}
-          editable={true}
+          editable={button !== 'Ждём других игроков'}
           showShips={true}
         />
       </div>
@@ -107,18 +116,20 @@ export default function BuildShip() {
         <button
           className={styles.shuffleButton}
           onClick={handleShuffle}
-          disabled={isPlacing}
+          disabled={isPlacing || button === 'Ждём других игроков'}
           title="Перемешать корабли"
         >
-          <RotateCw size={20} />
+          <Shuffle size={20} />
         </button>
 
         <button
           className={styles.submitButton}
           onClick={handlePlaceShips}
-          disabled={!isValid || isPlacing}
+          disabled={(!isValid || isPlacing)|| button === 'Ждём других игроков'}
         >
-          {isPlacing ? "Отправка..." : "Поехали"}
+          {//isPlacing ? "Отправка..." : "Поехали"
+          button
+          }
         </button>
       </div>
 

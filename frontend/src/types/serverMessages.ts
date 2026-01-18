@@ -16,8 +16,9 @@ export interface ShipMyShot {
 
 /** Корабль в режиме ENEMY_SHOT (видно начало, конец и подбитые клетки) */
 export interface ShipEnemyShot {
-  first_cord: Coordinate;
-  sec_cord: Coordinate;
+  cords?: Coordinate[]; // Все координаты корабля (новый формат от бэкенда)
+  first_cord?: Coordinate; // Первая координата (старый формат)
+  sec_cord?: Coordinate; // Последняя координата (старый формат)
   heated_cords: Coordinate[];
   isKilled: boolean;
 }
@@ -62,6 +63,12 @@ export interface ShipsPlacedMessage {
   type: "SHIPS_PLACED";
 }
 
+/** Сообщение о готовности обоих игроков */
+export interface BothPlayersReadyMessage {
+  type: "BOTH_PLAYERS_READY";
+  message: string;
+}
+
 /** Сообщение о состоянии игры в режиме MY_SHOT */
 export interface StateMyShotMessage {
   type: "STATE";
@@ -94,6 +101,11 @@ export interface PongMessage {
   type: "PONG";
 }
 
+/** Сообщение о том, что сейчас ваш ход */
+export interface YourTurnMessage {
+  type: "YOUR_TURN";
+}
+
 // ==================== Объединенный тип ====================
 
 /** Все возможные сообщения от сервера */
@@ -101,11 +113,13 @@ export type ServerMessage =
   | SessionCreatedMessage
   | GameStartMessage
   | ShipsPlacedMessage
+  | BothPlayersReadyMessage
   | StateMyShotMessage
   | StateEnemyShotMessage
   | GameOverMessage
   | ErrorMessage
-  | PongMessage;
+  | PongMessage
+  | YourTurnMessage;
 
 // ==================== Type Guards ====================
 
@@ -128,6 +142,13 @@ export function isShipsPlacedMessage(
   message: ServerMessage
 ): message is ShipsPlacedMessage {
   return message.type === "SHIPS_PLACED";
+}
+
+/** Проверка, является ли сообщение BothPlayersReadyMessage */
+export function isBothPlayersReadyMessage(
+  message: ServerMessage
+): message is BothPlayersReadyMessage {
+  return message.type === "BOTH_PLAYERS_READY";
 }
 
 /** Проверка, является ли сообщение StateMyShotMessage */
@@ -161,6 +182,13 @@ export function isErrorMessage(
 /** Проверка, является ли сообщение PongMessage */
 export function isPongMessage(message: ServerMessage): message is PongMessage {
   return message.type === "PONG";
+}
+
+/** Проверка, является ли сообщение YourTurnMessage */
+export function isYourTurnMessage(
+  message: ServerMessage
+): message is YourTurnMessage {
+  return message.type === "YOUR_TURN";
 }
 
 /** Проверка, является ли сообщение любым STATE сообщением */

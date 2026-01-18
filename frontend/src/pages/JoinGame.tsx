@@ -4,6 +4,7 @@ import { GameWebSocket } from "../service/GameWebSocket";
 import {
   isGameStartMessage,
   parseServerMessage,
+  isErrorMessage,
 } from "../types/serverMessages";
 import { useApp } from "../contexts/AppContext";
 
@@ -13,7 +14,7 @@ export default function JoinGame({
   socketRef: React.MutableRefObject<GameWebSocket>;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const { setAppState } = useApp();
+  const { setAppState, setPlayerId, setFirstTurn } = useApp();
 
   useEffect(() => {
     const unsubscribe = socketRef.current.onMessage((event) => {
@@ -22,14 +23,19 @@ export default function JoinGame({
       if (!message) return;
 
       if (isGameStartMessage(message)) {
+        // При присоединении к сессии мы player2
+        setPlayerId("player2");
+        setFirstTurn(message.firstTurn);
         setAppState("build");
+      } else if (isErrorMessage(message)) {
+        console.error("Server error:", message.message);
       }
     });
 
     return () => {
       unsubscribe();
     };
-  }, [socketRef, setAppState]);
+  }, [socketRef, setAppState, setPlayerId, setFirstTurn]);
 
   function handleJoinGame() {
     const roomCode = inputRef.current?.value.trim() || "";

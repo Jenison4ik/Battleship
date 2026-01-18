@@ -7,6 +7,7 @@ import "./App.css";
 import CreateGame from "./pages/CreateGame";
 import JoinGame from "./pages/JoinGame";
 import BuildShip from "./pages/BuildShip";
+import GamePage from "./pages/GamePage";
 import { GameWebSocket } from "./service/GameWebSocket";
 
 function AppContent() {
@@ -104,6 +105,11 @@ function AppContent() {
       }
       return <BuildShip />;
     case "ingame":
+      // Гарантируем, что socketRef.current не null перед рендерингом GamePage
+      if (!socketRef.current) {
+        return <LoadingPage />;
+      }
+      return <GamePage />;
     case "endgame":
       return <Main />;
     default:

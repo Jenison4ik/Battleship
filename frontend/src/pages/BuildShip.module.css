@@ -49,12 +49,17 @@
   cursor: pointer;
   transition: all 0.2s;
   color: #374151;
+  padding: 7px;
+  box-sizing: border-box;
 }
-
+.shuffleButton svg{
+  width: auto;
+  height: 100%;
+}
 .shuffleButton:hover:not(:disabled) {
   background-color: #e5e7eb;
   border-color: #9ca3af;
-  transform: rotate(90deg);
+  transform: scale(1.1);
 }
 
 .shuffleButton:disabled {

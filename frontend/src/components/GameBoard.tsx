@@ -10,6 +10,7 @@ export interface GameBoardProps {
   editable?: boolean;
   showShips?: boolean;
   shotCells?: Set<string>;
+  hitCells?: Set<string>; // Клетки с попаданиями (должны быть залиты красным)
   onCellClick?: (x: number, y: number) => void;
 }
 
@@ -19,6 +20,7 @@ export default function GameBoard({
   editable = false,
   showShips = true,
   shotCells = new Set(),
+  hitCells = new Set(),
   onCellClick,
 }: GameBoardProps) {
   const [draggedShip, setDraggedShip] = useState<Ship | null>(null);
@@ -250,6 +252,7 @@ export default function GameBoard({
   const getCellState = (x: number, y: number) => {
     const cellKey = `${x},${y}`;
     const hasShot = shotCells.has(cellKey);
+    const isHit = hitCells.has(cellKey); // Попадание по вражескому кораблю
     const ship = ships.find((s) =>
       s.cells.some(([cx, cy]) => cx === x && cy === y)
     );
@@ -257,6 +260,7 @@ export default function GameBoard({
     return {
       hasShip: !!ship,
       hasShot,
+      isHit, // Попадание (для красной заливки)
       isSelected: ship?.id === selectedShip?.id,
     };
   };
@@ -297,8 +301,10 @@ export default function GameBoard({
                   className={`${styles.cell} ${
                     cellState.hasShip && showShips ? styles.ship : ""
                   } ${cellState.hasShot ? styles.shot : ""} ${
-                    cellState.isSelected && editable ? styles.selected : ""
-                  } ${isDragging ? styles.dragging : ""}`}
+                    cellState.isHit ? styles.hit : ""
+                  } ${cellState.isSelected && editable ? styles.selected : ""} ${
+                    isDragging ? styles.dragging : ""
+                  }`}
                   onClick={() => handleCellClick(col, row)}
                   onMouseDown={
                     ship && editable && !isDragging
