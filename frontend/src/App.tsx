@@ -66,8 +66,11 @@ function AppContent() {
   );
 
   useEffect(() => {
+    console.log("[App] useEffect running, reconnectTrigger=", reconnectTrigger);
+    
     // Закрываем предыдущее соединение если оно есть
     if (socketRef.current) {
+      console.log("[App] Closing previous connection");
       socketRef.current.disconnect();
       socketRef.current = null;
     }
@@ -103,11 +106,13 @@ function AppContent() {
 
     // Очистка при размонтировании
     return () => {
+      console.log("[App] useEffect CLEANUP running");
       isMounted = false;
       unsubscribeOpen();
       unsubscribeError();
       unsubscribeClose();
       if (socketRef.current) {
+        console.log("[App] Disconnecting in cleanup");
         socketRef.current.disconnect();
         socketRef.current = null;
       }

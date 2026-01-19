@@ -21,12 +21,16 @@ export class GameWebSocket {
    */
   connect(): Promise<void> {
     return new Promise((resolve, reject) => {
+      console.log("[GameWebSocket] connect() called, current state:", this.socket?.readyState);
+      
       if (this.socket?.readyState === WebSocket.OPEN) {
+        console.log("[GameWebSocket] Already connected");
         resolve();
         return;
       }
 
       if (this.isConnecting) {
+        console.log("[GameWebSocket] Already connecting, waiting...");
         // Ждем подключения, если уже идет процесс подключения
         const checkConnection = setInterval(() => {
           if (this.socket?.readyState === WebSocket.OPEN) {
@@ -41,31 +45,37 @@ export class GameWebSocket {
       }
 
       this.isConnecting = true;
+      console.log("[GameWebSocket] Creating new WebSocket to", this.url);
 
       try {
         this.socket = new WebSocket(this.url);
 
         this.socket.onopen = () => {
+          console.log("[GameWebSocket] onopen fired");
           this.isConnecting = false;
           this.notifyOpenHandlers();
           resolve();
         };
 
         this.socket.onerror = (error) => {
+          console.error("[GameWebSocket] onerror fired:", error);
           this.isConnecting = false;
           this.notifyErrorHandlers(error);
           reject(error);
         };
 
         this.socket.onclose = (event) => {
+          console.log("[GameWebSocket] onclose fired: code=", event.code, "reason=", event.reason);
           this.isConnecting = false;
           this.notifyCloseHandlers(event);
         };
 
         this.socket.onmessage = (event) => {
+          console.log("[GameWebSocket] onmessage:", event.data);
           this.notifyMessageHandlers(event);
         };
       } catch (error) {
+        console.error("[GameWebSocket] catch error:", error);
         this.isConnecting = false;
         reject(error);
       }
@@ -76,6 +86,8 @@ export class GameWebSocket {
    * Отключение от WebSocket сервера
    */
   disconnect(code?: number, reason?: string): void {
+    console.log("[GameWebSocket] disconnect() called, code=", code, "reason=", reason);
+    console.trace("[GameWebSocket] disconnect stack trace:");
     if (this.socket) {
       this.socket.close(code, reason);
       this.socket = null;
