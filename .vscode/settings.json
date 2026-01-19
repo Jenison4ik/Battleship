@@ -1,0 +1,35 @@
+{
+  // Настройки C++ для clangd
+  "clangd.arguments": [
+    "--compile-commands-dir=${workspaceFolder}/build",
+    "--header-insertion=never",
+    "--background-index",
+    "--clang-tidy",
+    "--completion-style=detailed",
+    "--pch-storage=memory"
+  ],
+
+  // Отключаем встроенный IntelliSense, используем clangd
+  "C_Cpp.intelliSenseEngine": "disabled",
+
+  // Пути для C++ IntelliSense (на случай, если clangd не установлен)
+  "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
+  "C_Cpp.default.cppStandard": "c++17",
+  "C_Cpp.default.includePath": [
+    "${workspaceFolder}/backend/include",
+    "${workspaceFolder}/backend",
+    "/usr/local/include",
+    "/opt/homebrew/include"
+  ],
+
+  // Настройки для файлов C++
+  "files.associations": {
+    "*.h": "cpp",
+    "*.cpp": "cpp",
+    "*.hpp": "cpp"
+  },
+
+  // Подсветка синтаксиса
+  "editor.semanticHighlighting.enabled": true,
+  "cmake.sourceDirectory": "/Users/zhekich_solovev/Sites/sea-battle/backend"
+}

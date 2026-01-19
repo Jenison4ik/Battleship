@@ -1,7 +1,8 @@
 import { useApp } from "../contexts/AppContext";
+import styles from "./main.module.css";
 
 export default function Main() {
-  const { appState, setAppState } = useApp();
+  const { setAppState } = useApp();
 
   const handleCreateGame = () => {
     setAppState("create");
@@ -14,9 +15,13 @@ export default function Main() {
   return (
     <>
       <h1>Морской бой</h1>
-      <button onClick={handleCreateGame}>Создать игру</button>
-      <button onClick={handleJoinGame}>Присоединиться к игре</button>
-      <p>Текущее состояние: {appState}</p>
+      <div className={styles["button-wrap"]}>
+        <button onClick={handleCreateGame}>Создать игру</button>
+        <button onClick={handleJoinGame}>Присоединиться к игре</button>
+      </div>
+      <p className={styles.lable}>
+        Made by <a href="https://github.com/Jenison4ik">Jenison</a> with ❤️
+      </p>
     </>
   );
 }

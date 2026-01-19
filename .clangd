@@ -1,0 +1,33 @@
+CompileFlags:
+  # Указываем путь к compile_commands.json
+  CompilationDatabase: build/
+
+  # Добавляем дополнительные флаги компиляции
+  Add:
+    - "-std=c++17"
+    - "-I/usr/local/include"
+    - "-I/opt/homebrew/include"
+
+# Диагностика
+Diagnostics:
+  # Отключаем некоторые предупреждения, которые могут быть излишне строгими
+  Suppress:
+    - "-Wunused-parameter"
+  
+  # Уровень детализации диагностики
+  ClangTidy:
+    Add: 
+      - "modernize-*"
+      - "readability-*"
+      - "performance-*"
+    Remove:
+      - "modernize-use-trailing-return-type"
+      - "readability-identifier-length"
+
+# Завершение кода
+Completion:
+  AllScopes: Yes
+
+# Индексация
+Index:
+  Background: Build

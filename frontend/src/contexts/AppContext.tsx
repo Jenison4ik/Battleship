@@ -3,6 +3,8 @@ import {
   useContext,
   useRef,
   useState,
+  useMemo,
+  useCallback,
   type ReactNode,
 } from "react";
 import { GameWebSocket } from "../service/GameWebSocket";
@@ -43,7 +45,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [myShips, setMyShips] = useState<Ship[]>([]);
   const socketRef = useRef<GameWebSocket | null>(null);
 
-  const reconnect = () => {
+  // Используем useCallback для стабильной функции reconnect
+  const reconnect = useCallback(() => {
     if (socketRef.current) {
       socketRef.current.disconnect();
     }
@@ -53,26 +56,37 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setMyShips([]);
     // Триггерим переподключение через изменение состояния
     setReconnectTrigger((prev) => prev + 1);
-  };
+  }, []);
+
+  // Используем useMemo для мемоизации значения контекста
+  const contextValue = useMemo(
+    () => ({
+      appState,
+      setAppState,
+      socketRef,
+      reconnect,
+      reconnectTrigger,
+      playerId,
+      setPlayerId,
+      firstTurn,
+      setFirstTurn,
+      myShips,
+      setMyShips,
+    }),
+    [
+      appState,
+      reconnect,
+      reconnectTrigger,
+      playerId,
+      firstTurn,
+      myShips,
+      // setAppState, setPlayerId, setFirstTurn, setMyShips - стабильные функции от useState
+      // socketRef - стабильная ссылка от useRef
+    ]
+  );
 
   return (
-    <AppContext.Provider
-      value={{
-        appState,
-        setAppState,
-        socketRef,
-        reconnect,
-        reconnectTrigger,
-        playerId,
-        setPlayerId,
-        firstTurn,
-        setFirstTurn,
-        myShips,
-        setMyShips,
-      }}
-    >
-      {children}
-    </AppContext.Provider>
+    <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>
   );
 }
 

@@ -1,3 +1,7 @@
+:root {
+  --blur-color: #5351cd91;
+}
+
 .load-box {
   display: flex;
   gap: 10px;
@@ -5,10 +9,45 @@
   justify-content: center;
 }
 
+.session {
+  cursor: pointer;
+  transition: all 0.2s ease-out;
+  user-select: none;
+}
+
 .spiner {
   animation: load 2s linear 0s infinite normal;
 }
-
+.copied {
+  animation: copied 0.5s ease-out;
+}
+.sessionWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 15px;
+  gap: 10px;
+  background-color: #dddddd;
+  cursor: pointer;
+  transition: all 0.2s ease-out;
+}
+.sessionWrap:hover {
+  box-shadow: 0px 3px 5px var(--blur-color), 0px -3px 5px var(--blur-color),
+    3px 0px 5px var(--blur-color), -3px 0px 5px var(--blur-color);
+}
+.sessionWrap * {
+  color: #000;
+}
+@keyframes copied {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 @keyframes load {
   from {
     transform: rotate(0deg);

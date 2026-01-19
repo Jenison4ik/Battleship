@@ -4,13 +4,30 @@ project(SeaBattleBackend)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Генерация compile_commands.json для clangd и других LSP
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Поиск зависимостей
-find_package(Boost REQUIRED COMPONENTS system)
+# Crow работает без Boost (header-only библиотека)
 find_package(Threads REQUIRED)
 
+# Поиск ASIO (требуется для Crow)
+find_path(ASIO_INCLUDE_DIR asio.hpp
+    PATHS
+    /opt/homebrew/include
+    /usr/local/include
+    /usr/include
+)
+
+if(ASIO_INCLUDE_DIR)
+    message(STATUS "Found ASIO at ${ASIO_INCLUDE_DIR}")
+else()
+    message(FATAL_ERROR "ASIO not found. Install with: brew install asio")
+endif()
+
 # Поиск Crow (локально в include или системно)
-# Ищем crow.h в include директории
-find_path(CROW_HEADER_DIR crow.h
+# Ищем crow/app.h в include директории
+find_path(CROW_HEADER_DIR crow/app.h
     PATHS
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     /usr/local/include
@@ -20,7 +37,7 @@ find_path(CROW_HEADER_DIR crow.h
 
 if(NOT CROW_HEADER_DIR)
     # Пробуем найти в системных путях
-    find_path(CROW_HEADER_DIR crow.h
+    find_path(CROW_HEADER_DIR crow/app.h
         PATHS
         /usr/local/include
         /usr/include
@@ -29,7 +46,7 @@ endif()
 
 if(CROW_HEADER_DIR)
     message(STATUS "Found Crow header at ${CROW_HEADER_DIR}")
-    # CROW_HEADER_DIR указывает на директорию где находится crow.h
+    # CROW_HEADER_DIR указывает на директорию где находится crow/
     # Это и есть нужная include директория
     set(CROW_INCLUDE_DIR ${CROW_HEADER_DIR})
 else()
@@ -57,12 +74,11 @@ add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CROW_INCLUDE_DIR}
-    ${Boost_INCLUDE_DIRS}
+    ${ASIO_INCLUDE_DIR}
 )
 
 # Линковка библиотек
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    ${Boost_LIBRARIES}
     Threads::Threads
 )
 

@@ -1,0 +1,6 @@
+.cursorDiv {
+  position: fixed;
+  pointer-events: none;
+  z-index: 1000;
+  /* transition: all 0.2s ease-out; */
+}

@@ -31,7 +31,7 @@
 .board {
   display: flex;
   flex-direction: column;
-  border: 3px solid #22c55e;
+  border: 3px solid #5d2298;
   background-color: #f0f9ff;
   user-select: none;
   width: fit-content;
@@ -123,4 +123,3 @@
     font-size: 12px;
   }
 }
-

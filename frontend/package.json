@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/start-backend.js && vite",
+    "dev:frontend": "vite",
+    "dev:backend": "node scripts/start-backend.js",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"

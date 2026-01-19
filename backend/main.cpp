@@ -71,7 +71,7 @@ void handleWebSocketMessage(crow::websocket::connection& conn, const std::string
             return;
         }
         
-        std::lock_guard<std::mutex> connLock(connectionMutex);
+        std::unique_lock<std::mutex> connLock(connectionMutex);
         auto& currentSession = connectionSessions[&conn];
         bool isPlayer1 = connectionIsPlayer1[&conn];
         
@@ -82,6 +82,7 @@ void handleWebSocketMessage(crow::websocket::connection& conn, const std::string
             currentSession = sessionManager.getSession(roomCode);
             connectionPlayerIds[&conn] = "player1";
             connectionIsPlayer1[&conn] = true;
+            connLock.unlock();
             
             conn.send_text(JsonSerializer::sessionCreated(roomCode));
             return;
@@ -90,35 +91,52 @@ void handleWebSocketMessage(crow::websocket::connection& conn, const std::string
         // Присоединение к сессии
         if (type == "JOIN_SESSION") {
             if (!json.has("roomCode")) {
+                connLock.unlock();
                 conn.send_text(JsonSerializer::error("Отсутствует поле 'roomCode'"));
                 return;
             }
             
             std::string roomCode = json["roomCode"].s();
             Player player2(&conn, "player2");
-            currentSession = sessionManager.joinSession(roomCode, player2);
+            auto joinedSession = sessionManager.joinSession(roomCode, player2);
             
-            if (!currentSession) {
+            if (!joinedSession) {
+                // НЕ сохраняем в connectionSessions при ошибке - соединение остается "чистым"
+                connLock.unlock();
                 conn.send_text(JsonSerializer::error("Комната не найдена или уже заполнена"));
                 return;
             }
             
+            // Только при успешном присоединении обновляем maps
+            currentSession = joinedSession;
             connectionPlayerIds[&conn] = "player2";
             connectionIsPlayer1[&conn] = false;
             
-            // Уведомляем обоих игроков о начале игры
-            std::lock_guard<std::mutex> lock(currentSession->mutex);
-            currentSession->player1.socket->send_text(
-                JsonSerializer::gameStart(1)
-            );
-            currentSession->player2.socket->send_text(
-                JsonSerializer::gameStart(1)
-            );
+            // Получаем сокеты для отправки
+            crow::websocket::connection* player1Socket = nullptr;
+            crow::websocket::connection* player2Socket = nullptr;
+            {
+                std::lock_guard<std::mutex> lock(currentSession->mutex);
+                player1Socket = currentSession->player1.socket;
+                player2Socket = currentSession->player2.socket;
+            }
+            
+            // Освобождаем connectionMutex перед отправкой сообщений
+            connLock.unlock();
+            
+            // Уведомляем обоих игроков о начале игры (без блокировки connectionMutex)
+            if (player1Socket) {
+                player1Socket->send_text(JsonSerializer::gameStart(1));
+            }
+            if (player2Socket) {
+                player2Socket->send_text(JsonSerializer::gameStart(1));
+            }
             return;
         }
         
         // Если сессия не найдена, игнорируем сообщение
         if (!currentSession) {
+            connLock.unlock();
             conn.send_text(JsonSerializer::error("Сессия не найдена"));
             return;
         }
