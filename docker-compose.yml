@@ -14,7 +14,7 @@ services:
       dockerfile: nginx/Dockerfile
     container_name: battleship-nginx
     ports:
-      - "80:80"
+      - "0.0.0.0:80:80" # Доступен из локальной сети
     depends_on:
       - backend
     restart: unless-stopped

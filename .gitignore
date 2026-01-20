@@ -35,3 +35,6 @@ test_game_session.html
 test_game_session.py
 test_ships.py
 test*
+
+#local_scripts
+./*.sh
