@@ -37,4 +37,4 @@ test_ships.py
 test*
 
 #local_scripts
-./*.sh
+*.sh
